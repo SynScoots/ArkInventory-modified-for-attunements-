@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: Ark Inventory Rules [Scoots]
+## Notes: Adds the resist(), mythic(), attuned(), and attunable() rules to ArkInventory
+## Author: Scoots
+## Version: 1.0
+## RequiredDeps: ArkInventoryRules
+
+ArkInventoryRules_Scoots.lua
+ArkInventoryRules_Scoots.xml
