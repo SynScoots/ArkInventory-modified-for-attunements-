@@ -14,3 +14,4 @@ Download this repository, then extract the contents of the `src` directory into 
 - `attunableatall()` - Matches items that can be attuned by anyone.
 - `attuned()` - Matches items that have been attuned.
 - `optimalforme()` - Matches items that are optimal for the current character.
+- `hasbounty()` - Matches items which have an active bounty.

@@ -2,7 +2,7 @@
 local TTH = nil
 
 function ArkInventoryRules_Scoots_RegisterTTH(tooltip)
-	TTH = tooltip
+    TTH = tooltip
 end
 
 local function getItemId()
@@ -10,124 +10,125 @@ local function getItemId()
 end
 
 local function getTooltipLines(tooltip)
-	local lines = {}
-	local tooltipLines = {tooltip:GetRegions()}
-	
-	for _, line in ipairs(tooltipLines) do
-		if(line:IsObjectType('FontString')) then
-			table.insert(lines, line:GetText())
-		end
-	end
-	
-	return lines
+    local lines = {}
+    local tooltipLines = {tooltip:GetRegions()}
+    
+    for _, line in ipairs(tooltipLines) do
+        if(line:IsObjectType('FontString')) then
+            table.insert(lines, line:GetText())
+        end
+    end
+    
+    return lines
 end
 
 function rule:OnEnable()
-	ArkInventoryRules.Register(self, 'RESIST', rule.resist)
-	ArkInventoryRules.Register(self, 'MYTHIC', rule.mythic)
-	ArkInventoryRules.Register(self, 'ATTUNABLE', rule.attunable)
-	ArkInventoryRules.Register(self, 'ATTUNABLEATALL', rule.attunableatall)
-	ArkInventoryRules.Register(self, 'ATTUNED', rule.attuned)
-	ArkInventoryRules.Register(self, 'OPTIMALFORME', rule.optimalforme)
+    ArkInventoryRules.Register(self, 'RESIST', rule.resist)
+    ArkInventoryRules.Register(self, 'MYTHIC', rule.mythic)
+    ArkInventoryRules.Register(self, 'ATTUNABLE', rule.attunable)
+    ArkInventoryRules.Register(self, 'ATTUNABLEATALL', rule.attunableatall)
+    ArkInventoryRules.Register(self, 'ATTUNED', rule.attuned)
+    ArkInventoryRules.Register(self, 'OPTIMALFORME', rule.optimalforme)
+    ArkInventoryRules.Register(self, 'HASBOUNTY', rule.hasbounty)
 end
 
 function rule.resist(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
-	
-	local ac = select('#', ...)
-	local query = {}
-	
-	local fn = 'resist'
-	
-	TTH:ClearLines()
-	TTH:SetOwner(UIParent)
-	TTH:SetHyperlink(ArkInventoryRules.Object.h)
-	local lines = getTooltipLines(TTH)
-	TTH:Hide()
-	
-	local resistLines = {}
-	
-	for _, line in ipairs(lines) do
-		line = string.lower(line)
-		if(not string.find(line, '%(%d+%) set:') and string.find(line, '%+%d+ [acdefhinorstuw]+ resistance')) then
-			table.insert(resistLines, line)
-		end
-	end
-	
-	if(table.getn(resistLines) == 0) then
-		return false
-	end
-	
-	if(ac == 0) then
-		return true
-	end
-	
-	for ax = 1, ac do
-		local arg = select(ax, ...)
-		
-		if type(arg) == "string" then
-			for _, line in ipairs(resistLines) do
-				line = string.lower(line)
-				if(string.find(line, '%+%d+ ' .. arg .. ' resistance')) then
-					return true
-				end
-			end
-		else
-			error(string.format(ArkInventory.Localise["RULE_FAILED_ARGUMENT_IS_INVALID"], fn, ax, string.format( "%s", ArkInventory.Localise["STRING"]), 0))
-		end
-	end
-	
-	return false
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
+    
+    local ac = select('#', ...)
+    local query = {}
+    
+    local fn = 'resist'
+    
+    TTH:ClearLines()
+    TTH:SetOwner(UIParent)
+    TTH:SetHyperlink(ArkInventoryRules.Object.h)
+    local lines = getTooltipLines(TTH)
+    TTH:Hide()
+    
+    local resistLines = {}
+    
+    for _, line in ipairs(lines) do
+        line = string.lower(line)
+        if(not string.find(line, '%(%d+%) set:') and string.find(line, '%+%d+ [acdefhinorstuw]+ resistance')) then
+            table.insert(resistLines, line)
+        end
+    end
+    
+    if(table.getn(resistLines) == 0) then
+        return false
+    end
+    
+    if(ac == 0) then
+        return true
+    end
+    
+    for ax = 1, ac do
+        local arg = select(ax, ...)
+        
+        if type(arg) == "string" then
+            for _, line in ipairs(resistLines) do
+                line = string.lower(line)
+                if(string.find(line, '%+%d+ ' .. arg .. ' resistance')) then
+                    return true
+                end
+            end
+        else
+            error(string.format(ArkInventory.Localise["RULE_FAILED_ARGUMENT_IS_INVALID"], fn, ax, string.format( "%s", ArkInventory.Localise["STRING"]), 0))
+        end
+    end
+    
+    return false
 end
 
 function rule.mythic(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
     
-	local fn = 'mythic'
-	
-	TTH:ClearLines()
-	TTH:SetOwner(UIParent)
-	TTH:SetHyperlink(ArkInventoryRules.Object.h)
-	local lines = getTooltipLines(TTH)
-	TTH:Hide()
-	
-	for _, line in ipairs(lines) do
-		if(line == 'Mythic') then
+    local fn = 'mythic'
+    
+    TTH:ClearLines()
+    TTH:SetOwner(UIParent)
+    TTH:SetHyperlink(ArkInventoryRules.Object.h)
+    local lines = getTooltipLines(TTH)
+    TTH:Hide()
+    
+    for _, line in ipairs(lines) do
+        if(line == 'Mythic') then
             return true
-		end
-	end
+        end
+    end
     
     return false
 end
 
 function rule.attunable(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
     
     if(CanAttuneItemHelper == nil) then
         return false
     end
     
-	local fn = 'attunable'
+    local fn = 'attunable'
     
     return rule.attunableatall() and rule.optimalforme()
 end
 
 function rule.attunableatall(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
     
     if(IsAttunableBySomeone == nil) then
         return false
     end
     
-	local fn = 'attunableatall'
+    local fn = 'attunableatall'
     
     local check = IsAttunableBySomeone(getItemId())
     if(check ~= nil and check ~= 0) then
@@ -138,15 +139,15 @@ function rule.attunableatall(...)
 end
 
 function rule.attuned(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
     
     if(CanAttuneItemHelper == nil or GetItemLinkAttuneProgress == nil) then
         return false
     end
     
-	local fn = 'attuned'
+    local fn = 'attuned'
     
     if(CanAttuneItemHelper(getItemId()) <= 0) then
         return false
@@ -160,14 +161,14 @@ function rule.attuned(...)
 end
 
 function rule.optimalforme(...)
-	if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
-		return false
-	end
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
     
-	local fn = 'optimalforme'
+    local fn = 'optimalforme'
     
     local _, playerClass = UnitClass('player')
-	playerClass = strupper(playerClass)
+    playerClass = strupper(playerClass)
     local _, _, _, _, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(ArkInventoryRules.Object.h)
     
     if(itemType == 'Weapon') then
@@ -294,12 +295,12 @@ function rule.optimalforme(...)
         }
 
         if(map[itemSubType][playerClass] ~= nil) then
-			if(itemEquipLoc == 'INVTYPE_WEAPONOFFHAND' and noOffhandWeapons[playerClass] ~= nil) then
-				return false
-			end
-			
-			return true
-		end
+            if(itemEquipLoc == 'INVTYPE_WEAPONOFFHAND' and noOffhandWeapons[playerClass] ~= nil) then
+                return false
+            end
+            
+            return true
+        end
         
         return false
     elseif(itemType == 'Armor') then
@@ -383,4 +384,18 @@ function rule.optimalforme(...)
     end
     
     return true
+end
+
+function rule.hasbounty(...)
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
+    
+    if(IsAttunableBySomeone == nil) then
+        return false
+    end
+    
+    local fn = 'attunableatall'
+    
+    return GetCustomGameData(31, getItemId()) > 0
 end

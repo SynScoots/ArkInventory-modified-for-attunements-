@@ -2,6 +2,12 @@
 -- $Revision: 405 $
 -- $Date: 2010-10-12 16:53:38 +1100 (Tue, 12 Oct 2010) $
 
+local perkOptions = {
+    ['bars'] = true,
+    ['bounty'] = true,
+    ['accountbars'] = false
+}
+
 ArkInventory = LibStub( "AceAddon-3.0" ):NewAddon( "ArkInventory", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceBucket-3.0" )
 
 ArkInventory.Lib = { -- libraries live here
@@ -4297,7 +4303,7 @@ function ArkInventory.Frame_Main_Show( loc_id, player_id )
 	
 	frame:Show( )
 	ArkInventory.Frame_Main_Generate( loc_id )
-    scoots_iterateAllSlots(loc_id)
+    scootsArkInv_iterateAllSlots(loc_id)
 end
 
 function ArkInventory.Frame_Main_OnShow( frame )
@@ -5647,7 +5653,8 @@ function ArkInventory.Frame_Item_Update_Texture( frame )
 
 	-- new item indicator
 	ArkInventory.Frame_Item_Update_NewIndicator( frame )
-	scoots_setFrameAttunement(frame, i)
+	scootsArkInv_setFrameAttunement(frame, i)
+	scootsArkInv_setFrameBounty(frame, i)
 end
 
 function ArkInventory.Frame_Item_Update_Quest( frame )
@@ -8439,7 +8446,7 @@ function ArkInventory.UiTabToNext( frame, c, p, n )
 	
 end
 
-function scoots_deriveRGB(progress)
+function scootsArkInv_deriveRGB(progress)
 	local colours = {
 		['0']   = {['r'] = 1.0, ['g'] = 0.1, ['b'] = 0.1},
 		['50']  = {['r'] = 1.0, ['g'] = 1.0, ['b'] = 0.0},
@@ -8483,51 +8490,131 @@ function scoots_deriveRGB(progress)
 	return out.r, out.g, out.b
 end
 
-function scoots_setFrameAttunement(frame, i)
-    local hideText = true
-    local textFrameName = frame:GetName() .. '_attuneText'
+function scootsArkInv_getItemId(itemLink)
+    return tonumber(string.match(string.match(itemLink, 'item:%d+'), '%d+'))
+end
 
-    if(i ~= nil and i.h ~= nil and CanAttuneItemHelper ~= nil and GetItemLinkAttuneProgress ~= nil) then
-        local itemId = tonumber(string.match(string.match(i.h, 'item:%d+'), '%d+'))
+function scootsArkInv_setFrameAttunement(frame, item)
+    local hideProgress = true
+    local progressFrameName = frame:GetName() .. '_attuneBar'
+    
+    if(perkOptions.bars and item ~= nil and item.h ~= nil and CanAttuneItemHelper and IsAttunableBySomeone and GetItemLinkAttuneProgress) then
+        local itemId = scootsArkInv_getItemId(item.h)
+        local doBar = false
         
-        if(CanAttuneItemHelper(itemId) >= 1) then
-            hideText = false
+        if(perkOptions.accountbars) then
+            local check = IsAttunableBySomeone(itemId)
+            doBar = (check ~= nil and check ~= 0)
+        else
+            doBar = CanAttuneItemHelper(itemId) >= 1
+        end
+        
+        if(doBar) then
+            hideProgress = false
+            local size = 4
             
-            if(_G[textFrameName] == nil) then
-				textFrame = CreateFrame('Frame', textFrameName, frame)
-				
-				textFrame:SetFrameStrata('MEDIUM')
-				textFrame:SetWidth(frame:GetWidth())
-				textFrame:SetHeight(14)
-				
-				textFrame.text = textFrame:CreateFontString(nil, 'ARTWORK')
-				textFrame.text:SetFont('Fonts\\FRIZQT__.TTF', 10, 'THINOUTLINE')
-				textFrame.text:SetPoint('TOPLEFT', 0, -2)
-				textFrame.text:SetJustifyH('LEFT')
-				textFrame.text:SetShadowOffset(0, 0)
-				textFrame.text:SetShadowColor(0, 0, 0, 1)
+            if(_G[progressFrameName] == nil) then
+                local progressFrame = CreateFrame('Frame', progressFrameName, frame)
+                progressFrame:SetFrameStrata('MEDIUM')
+                progressFrame:SetWidth(size + 2)
+                progressFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
+                progressFrame.texture = progressFrame:CreateTexture()
+                progressFrame.texture:SetAllPoints()
+                progressFrame.texture:SetTexture(0, 0, 0, 1)
+                
+                progressFrame.child = CreateFrame('Frame', progressFrameName .. 'Child', progressFrame)
+                progressFrame.child:SetFrameStrata('MEDIUM')
+                progressFrame.child:SetWidth(size)
+                progressFrame.child:SetFrameLevel(progressFrame:GetFrameLevel() + 1)
+                progressFrame.child:SetPoint('BOTTOMLEFT', progressFrame, 'BOTTOMLEFT', 1, 1)
+                progressFrame.child.texture = progressFrame.child:CreateTexture()
+                progressFrame.child.texture:SetAllPoints()
             end
             
-            local attuneProgress = tonumber(GetItemLinkAttuneProgress(i.h))
-            local r, g, b = scoots_deriveRGB(attuneProgress)
+            local attuneProgress = tonumber(GetItemLinkAttuneProgress(item.h))
+            local r, g, b = scootsArkInv_deriveRGB(attuneProgress)
             
-            _G[textFrameName]:SetParent(frame)
-            _G[textFrameName]:SetPoint('TOPLEFT', frame, 'TOPLEFT', 0, 0)
-            _G[textFrameName].text:SetTextColor(r, g, b)
-            _G[textFrameName].text:SetText(string.format('%d', attuneProgress) .. '%')
-            _G[textFrameName]:Show()
+            _G[progressFrameName]:SetParent(frame)
+            _G[progressFrameName]:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 2, 2)
+            
+            local minHeight, maxHeight = size + 2, frame:GetHeight() - 4
+            local diff = maxHeight - minHeight
+            local height = minHeight + ((attuneProgress / 100) * diff)
+            
+            _G[progressFrameName]:SetHeight(height)
+            _G[progressFrameName].child:SetHeight(height - 2)
+            _G[progressFrameName].child.texture:SetTexture(r, g, b, 1)
+            
+            _G[progressFrameName]:Show()
         end
     end
     
-    if(_G[textFrameName] ~= nil) then
-        if(hideText) then
-            _G[textFrameName]:Hide()
+    if(_G[progressFrameName] ~= nil) then
+        if(hideProgress) then
+            _G[progressFrameName]:Hide()
         end
     end
 end
 
-function scoots_iterateAllSlots(locId)
-    ArkInventory.ItemCacheClear( )
+function scootsArkInv_setFrameBounty(frame, item)
+    -- Interface/MoneyFrame/UI-GoldIcon
+	-- toggleFrame.check.texture = toggleFrame.check:CreateTexture()
+	-- toggleFrame.check.texture:SetAllPoints()
+	-- toggleFrame.check.texture:SetTexture('Interface/AchievementFrame/UI-Achievement-Criteria-Check')
+	-- toggleFrame.check.texture:SetTexCoord(0, 0.65625, 0, 1)
+    
+    local hideBounty = true
+    local bountyFrameName = frame:GetName() .. '_Bounty'
+    
+    if(perkOptions.bounty and item ~= nil and item.h ~= nil and GetCustomGameData) then
+        local itemId = scootsArkInv_getItemId(item.h)
+        
+        if(GetCustomGameData(31, itemId) > 0) then
+            hideBounty = false
+            
+            if(_G[bountyFrameName] == nil) then
+                local bountyFrame = CreateFrame('Frame', bountyFrameName, frame)
+                bountyFrame:SetFrameStrata('MEDIUM')
+                bountyFrame:SetWidth(16)
+                bountyFrame:SetHeight(16)
+                bountyFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
+                bountyFrame.texture = bountyFrame:CreateTexture()
+                bountyFrame.texture:SetAllPoints()
+                bountyFrame.texture:SetTexture('Interface/MoneyFrame/UI-GoldIcon')
+            end
+            
+            _G[bountyFrameName]:SetParent(frame)
+            _G[bountyFrameName]:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -2, 2)
+            _G[bountyFrameName]:Show()
+        end
+    end
+    
+    if(_G[bountyFrameName] ~= nil) then
+        if(hideBounty) then
+            _G[bountyFrameName]:Hide()
+        end
+    end
+end
+
+function scootsArkInv_refreshPerkOptions()
+    if(PerkMgrPerks and GetPerkOptions) then
+        for perkId, perkData in pairs(PerkMgrPerks) do
+            if(perkData.name == 'Misc Options') then
+                local mask = GetPerkOptions(perkId)
+                perkOptions = {
+                    ['bars'] = bit.band(mask, bit.lshift(1, 8)) == 0,
+                    ['bounty'] = bit.band(mask, bit.lshift(1, 14)) == 0,
+                    ['accountbars'] = bit.band(mask, bit.lshift(1, 15)) ~= 0
+                }
+            end
+        end
+    end
+end
+
+function scootsArkInv_iterateAllSlots(locId)
+    ArkInventory.ItemCacheClear()
+    scootsArkInv_refreshPerkOptions()
+    
     for bagId = 1, 8 do
         local slotId = 1
         
@@ -8535,9 +8622,44 @@ function scoots_iterateAllSlots(locId)
             local cp = ArkInventory.LocationPlayerInfoGet(locId)
             local item = cp.location[locId].bag[bagId].slot[slotId]
             
-            scoots_setFrameAttunement(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
+            scootsArkInv_setFrameAttunement(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
+            scootsArkInv_setFrameBounty(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
             
             slotId = slotId + 1
         end
     end
+end
+
+-- https://pastebin.com/A7JScXWk
+function dumpvar(data)
+    -- cache of tables already printed, to avoid infinite recursive loops
+    local tablecache = {}
+    local buffer = ""
+    local padder = "    "
+ 
+    local function _dumpvar(d, depth)
+        local t = type(d)
+        local str = tostring(d)
+        if (t == "table") then
+            if (tablecache[str]) then
+                -- table already dumped before, so we dont
+                -- dump it again, just mention it
+                buffer = buffer.."<"..str..">\n"
+            else
+                tablecache[str] = (tablecache[str] or 0) + 1
+                buffer = buffer.."("..str..") {\n"
+                for k, v in pairs(d) do
+                    buffer = buffer..string.rep(padder, depth+1).."["..k.."] => "
+                    _dumpvar(v, depth+1)
+                end
+                buffer = buffer..string.rep(padder, depth).."}\n"
+            end
+        elseif (t == "number") then
+            buffer = buffer.."("..t..") "..str.."\n"
+        else
+            buffer = buffer.."("..t..") \""..str.."\"\n"
+        end
+    end
+    _dumpvar(data, 0)
+    return buffer
 end
