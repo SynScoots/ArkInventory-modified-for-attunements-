@@ -2,6 +2,7 @@
 -- $Revision: 405 $
 -- $Date: 2010-10-12 16:53:38 +1100 (Tue, 12 Oct 2010) $
 
+local _cu_uib_old_ArkInvScoots = nil
 local perkOptions = {
     ['bars'] = true,
     ['bounty'] = true,
@@ -4303,7 +4304,17 @@ function ArkInventory.Frame_Main_Show( loc_id, player_id )
 	
 	frame:Show( )
 	ArkInventory.Frame_Main_Generate( loc_id )
-    scootsArkInv_iterateAllSlots(loc_id)
+    
+    if(_cu_uib_old_ArkInvScoots == nil) then
+        _cu_uib_old_ArkInvScoots = _cu_uib
+        
+        _cu_uib = function(type)
+            scootsArkInv_iterateAllSlots(ArkInventory.Const.Location.Bag)
+            scootsArkInv_iterateAllSlots(ArkInventory.Const.Location.Bank)
+            scootsArkInv_iterateAllSlots(ArkInventory.Const.Location.Vault)
+            return _cu_uib_old_ArkInvScoots(type)
+        end
+    end
 end
 
 function ArkInventory.Frame_Main_OnShow( frame )
@@ -8511,7 +8522,7 @@ function scootsArkInv_setFrameAttunement(frame, item)
         
         if(doBar) then
             hideProgress = false
-            local size = 4
+            local size = 6
             
             if(_G[progressFrameName] == nil) then
                 local progressFrame = CreateFrame('Frame', progressFrameName, frame)
@@ -8557,12 +8568,6 @@ function scootsArkInv_setFrameAttunement(frame, item)
 end
 
 function scootsArkInv_setFrameBounty(frame, item)
-    -- Interface/MoneyFrame/UI-GoldIcon
-	-- toggleFrame.check.texture = toggleFrame.check:CreateTexture()
-	-- toggleFrame.check.texture:SetAllPoints()
-	-- toggleFrame.check.texture:SetTexture('Interface/AchievementFrame/UI-Achievement-Criteria-Check')
-	-- toggleFrame.check.texture:SetTexCoord(0, 0.65625, 0, 1)
-    
     local hideBounty = true
     local bountyFrameName = frame:GetName() .. '_Bounty'
     
@@ -8612,20 +8617,22 @@ function scootsArkInv_refreshPerkOptions()
 end
 
 function scootsArkInv_iterateAllSlots(locId)
-    ArkInventory.ItemCacheClear()
-    scootsArkInv_refreshPerkOptions()
-    
-    for bagId = 1, 8 do
-        local slotId = 1
+    if(_G['ARKINV_Frame' .. locId] ~= nil and _G['ARKINV_Frame' .. locId]:IsVisible()) then
+        ArkInventory.ItemCacheClear()
+        scootsArkInv_refreshPerkOptions()
         
-        while(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId] ~= nil) do
-            local cp = ArkInventory.LocationPlayerInfoGet(locId)
-            local item = cp.location[locId].bag[bagId].slot[slotId]
+        for bagId = 1, 8 do
+            local slotId = 1
             
-            scootsArkInv_setFrameAttunement(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
-            scootsArkInv_setFrameBounty(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
-            
-            slotId = slotId + 1
+            while(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId] ~= nil) do
+                local cp = ArkInventory.LocationPlayerInfoGet(locId)
+                local item = cp.location[locId].bag[bagId].slot[slotId]
+                
+                scootsArkInv_setFrameAttunement(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
+                scootsArkInv_setFrameBounty(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
+                
+                slotId = slotId + 1
+            end
         end
     end
 end
