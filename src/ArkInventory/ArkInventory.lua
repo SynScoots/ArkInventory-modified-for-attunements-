@@ -3,11 +3,7 @@
 -- $Date: 2010-10-12 16:53:38 +1100 (Tue, 12 Oct 2010) $
 
 local _cu_uib_old_ArkInvScoots = nil
-local perkOptions = {
-    ['bars'] = true,
-    ['bounty'] = true,
-    ['accountbars'] = false
-}
+local perkOptions = nil
 
 ArkInventory = LibStub( "AceAddon-3.0" ):NewAddon( "ArkInventory", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceBucket-3.0" )
 
@@ -5664,6 +5660,7 @@ function ArkInventory.Frame_Item_Update_Texture( frame )
 
 	-- new item indicator
 	ArkInventory.Frame_Item_Update_NewIndicator( frame )
+    scootsArkInv_refreshPerkOptions()
 	scootsArkInv_setFrameAttunement(frame, i)
 	scootsArkInv_setFrameBounty(frame, i)
 end
@@ -8509,6 +8506,10 @@ function scootsArkInv_setFrameAttunement(frame, item)
     local hideProgress = true
     local progressFrameName = frame:GetName() .. '_attuneBar'
     
+    if(perkOptions == nil) then
+        scootsArkInv_refreshPerkOptions()
+    end
+    
     if(perkOptions.bars and item ~= nil and item.h ~= nil and CanAttuneItemHelper and IsAttunableBySomeone and GetItemLinkAttuneProgress) then
         local itemId = scootsArkInv_getItemId(item.h)
         local doBar = false
@@ -8571,6 +8572,10 @@ function scootsArkInv_setFrameBounty(frame, item)
     local hideBounty = true
     local bountyFrameName = frame:GetName() .. '_Bounty'
     
+    if(perkOptions == nil) then
+        scootsArkInv_refreshPerkOptions()
+    end
+    
     if(perkOptions.bounty and item ~= nil and item.h ~= nil and GetCustomGameData) then
         local itemId = scootsArkInv_getItemId(item.h)
         
@@ -8602,6 +8607,12 @@ function scootsArkInv_setFrameBounty(frame, item)
 end
 
 function scootsArkInv_refreshPerkOptions()
+    perkOptions = {
+        ['bars'] = true,
+        ['bounty'] = true,
+        ['accountbars'] = false
+    }
+    
     if(PerkMgrPerks and GetPerkOptions) then
         for perkId, perkData in pairs(PerkMgrPerks) do
             if(perkData.name == 'Misc Options') then

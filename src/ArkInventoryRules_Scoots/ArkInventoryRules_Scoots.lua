@@ -149,7 +149,7 @@ function rule.attuned(...)
     
     local fn = 'attuned'
     
-    if(CanAttuneItemHelper(getItemId()) <= 0) then
+    if(rule.attunableatall() == false) then
         return false
     end
     
