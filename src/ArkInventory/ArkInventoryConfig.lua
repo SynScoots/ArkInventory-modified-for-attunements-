@@ -360,6 +360,69 @@ function ArkInventory.ConfigInternal( )
 						
 					end,
 				},
+				synastria = {
+					order = 160,
+					name = 'Synastria',
+					type = 'group',
+					args = {
+						attunebars = {
+							order = 170,
+							name = 'Show attunement bars',
+							desc = 'Displays a bar on items that grows and changes colour depending on how attuned the item is. Current character only.',
+							type = 'toggle',
+							get = function(info)
+								if not ArkInventory.db.profile.option.synastria or ArkInventory.db.profile.option.synastria.attunebars == nil then return true end
+								return ArkInventory.db.profile.option.synastria.attunebars or false
+							end,
+							set = function(info, v)
+								if not ArkInventory.db.profile.option.synastria then ArkInventory.db.profile.option.synastria = {} end
+								ArkInventory.db.profile.option.synastria.attunebars = v
+							end,
+						},
+						accountattunebars = {
+							order = 175,
+							name = 'Show account attunement bars',
+							desc = 'Displays a bar on items that grows and changes colour depending on how attuned the item is account-wide.',
+							type = 'toggle',
+							get = function(info)
+								if not ArkInventory.db.profile.option.synastria or ArkInventory.db.profile.option.synastria.accountattunebars == nil then return false end
+								return ArkInventory.db.profile.option.synastria.accountattunebars or false
+							end,
+							set = function(info, v)
+								if not ArkInventory.db.profile.option.synastria then ArkInventory.db.profile.option.synastria = {} end
+								ArkInventory.db.profile.option.synastria.accountattunebars = v
+							end,
+						},
+						bountyicon = {
+							order = 180,
+							name = 'Show bounty icon',
+							desc = 'Displays an icon on items with an active bounty.',
+							type = 'toggle',
+							get = function(info)
+								if not ArkInventory.db.profile.option.synastria or ArkInventory.db.profile.option.synastria.bountyicon == nil then return true end
+								return ArkInventory.db.profile.option.synastria.bountyicon or false
+							end,
+							set = function(info, v)
+								if not ArkInventory.db.profile.option.synastria then ArkInventory.db.profile.option.synastria = {} end
+								ArkInventory.db.profile.option.synastria.bountyicon = v
+							end,
+						},
+						forgedicon = {
+							order = 185,
+							name = 'Show forged icon',
+							desc = 'Displays an icon on items indicating their forged level.',
+							type = 'toggle',
+							get = function(info)
+								if not ArkInventory.db.profile.option.synastria or ArkInventory.db.profile.option.synastria.forgedicon == nil then return false end
+								return ArkInventory.db.profile.option.synastria.forgedicon or false
+							end,
+							set = function(info, v)
+								if not ArkInventory.db.profile.option.synastria then ArkInventory.db.profile.option.synastria = {} end
+								ArkInventory.db.profile.option.synastria.forgedicon = v
+							end,
+						},
+					}
+				},
 				tooltip = {
 					order = 200,
 					name = ArkInventory.Localise["CONFIG_SYSTEM_TOOLTIP"],

@@ -5660,9 +5660,9 @@ function ArkInventory.Frame_Item_Update_Texture( frame )
 
 	-- new item indicator
 	ArkInventory.Frame_Item_Update_NewIndicator( frame )
-    scootsArkInv_refreshPerkOptions()
 	scootsArkInv_setFrameAttunement(frame, i)
 	scootsArkInv_setFrameBounty(frame, i)
+	scootsArkInv_setFrameForged(frame, i)
 end
 
 function ArkInventory.Frame_Item_Update_Quest( frame )
@@ -8506,15 +8506,22 @@ function scootsArkInv_setFrameAttunement(frame, item)
     local hideProgress = true
     local progressFrameName = frame:GetName() .. '_attuneBar'
     
-    if(perkOptions == nil) then
-        scootsArkInv_refreshPerkOptions()
+    local showBars = true
+    local showAccountBars = false
+    
+    if(ArkInventory.db.profile.option.synastria ~= nil and ArkInventory.db.profile.option.synastria.attunebars ~= nil) then
+        showBars = ArkInventory.db.profile.option.synastria.attunebars
     end
     
-    if(perkOptions.bars and item ~= nil and item.h ~= nil and CanAttuneItemHelper and IsAttunableBySomeone and GetItemLinkAttuneProgress) then
+    if(ArkInventory.db.profile.option.synastria ~= nil and ArkInventory.db.profile.option.synastria.accountattunebars ~= nil) then
+        showAccountBars = ArkInventory.db.profile.option.synastria.accountattunebars
+    end
+    
+    if(showBars and item ~= nil and item.h ~= nil and CanAttuneItemHelper and IsAttunableBySomeone and GetItemLinkAttuneProgress) then
         local itemId = scootsArkInv_getItemId(item.h)
         local doBar = false
         
-        if(perkOptions.accountbars) then
+        if(showAccountBars) then
             local check = IsAttunableBySomeone(itemId)
             doBar = (check ~= nil and check ~= 0)
         else
@@ -8527,7 +8534,6 @@ function scootsArkInv_setFrameAttunement(frame, item)
             
             if(_G[progressFrameName] == nil) then
                 local progressFrame = CreateFrame('Frame', progressFrameName, frame)
-                progressFrame:SetFrameStrata('MEDIUM')
                 progressFrame:SetWidth(size + 2)
                 progressFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
                 progressFrame.texture = progressFrame:CreateTexture()
@@ -8535,7 +8541,6 @@ function scootsArkInv_setFrameAttunement(frame, item)
                 progressFrame.texture:SetTexture(0, 0, 0, 1)
                 
                 progressFrame.child = CreateFrame('Frame', progressFrameName .. 'Child', progressFrame)
-                progressFrame.child:SetFrameStrata('MEDIUM')
                 progressFrame.child:SetWidth(size)
                 progressFrame.child:SetFrameLevel(progressFrame:GetFrameLevel() + 1)
                 progressFrame.child:SetPoint('BOTTOMLEFT', progressFrame, 'BOTTOMLEFT', 1, 1)
@@ -8553,7 +8558,10 @@ function scootsArkInv_setFrameAttunement(frame, item)
             local diff = maxHeight - minHeight
             local height = minHeight + ((attuneProgress / 100) * diff)
             
+            _G[progressFrameName]:SetFrameStrata(ArkInventory.db.profile.option.frameStrata or 'MEDIUM')
             _G[progressFrameName]:SetHeight(height)
+            
+            _G[progressFrameName].child:SetFrameStrata(ArkInventory.db.profile.option.frameStrata or 'MEDIUM')
             _G[progressFrameName].child:SetHeight(height - 2)
             _G[progressFrameName].child.texture:SetTexture(r, g, b, 1)
             
@@ -8572,11 +8580,13 @@ function scootsArkInv_setFrameBounty(frame, item)
     local hideBounty = true
     local bountyFrameName = frame:GetName() .. '_Bounty'
     
-    if(perkOptions == nil) then
-        scootsArkInv_refreshPerkOptions()
+    local showIcon = true
+    
+    if(ArkInventory.db.profile.option.synastria ~= nil and ArkInventory.db.profile.option.synastria.bountyicon ~= nil) then
+        showIcon = ArkInventory.db.profile.option.synastria.bountyicon
     end
     
-    if(perkOptions.bounty and item ~= nil and item.h ~= nil and GetCustomGameData) then
+    if(showIcon and item ~= nil and item.h ~= nil and GetCustomGameData) then
         local itemId = scootsArkInv_getItemId(item.h)
         
         if(GetCustomGameData(31, itemId) > 0) then
@@ -8584,7 +8594,6 @@ function scootsArkInv_setFrameBounty(frame, item)
             
             if(_G[bountyFrameName] == nil) then
                 local bountyFrame = CreateFrame('Frame', bountyFrameName, frame)
-                bountyFrame:SetFrameStrata('MEDIUM')
                 bountyFrame:SetWidth(16)
                 bountyFrame:SetHeight(16)
                 bountyFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
@@ -8595,6 +8604,7 @@ function scootsArkInv_setFrameBounty(frame, item)
             
             _G[bountyFrameName]:SetParent(frame)
             _G[bountyFrameName]:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -2, 2)
+            _G[bountyFrameName]:SetFrameStrata(ArkInventory.db.profile.option.frameStrata or 'MEDIUM')
             _G[bountyFrameName]:Show()
         end
     end
@@ -8606,23 +8616,58 @@ function scootsArkInv_setFrameBounty(frame, item)
     end
 end
 
-function scootsArkInv_refreshPerkOptions()
-    perkOptions = {
-        ['bars'] = true,
-        ['bounty'] = true,
-        ['accountbars'] = false
-    }
+function scootsArkInv_setFrameForged(frame, item)
+    local hideForged = true
+    local forgedFrameName = frame:GetName() .. '_Forged'
     
-    if(PerkMgrPerks and GetPerkOptions) then
-        for perkId, perkData in pairs(PerkMgrPerks) do
-            if(perkData.name == 'Misc Options') then
-                local mask = GetPerkOptions(perkId)
-                perkOptions = {
-                    ['bars'] = bit.band(mask, bit.lshift(1, 8)) == 0,
-                    ['bounty'] = bit.band(mask, bit.lshift(1, 14)) == 0,
-                    ['accountbars'] = bit.band(mask, bit.lshift(1, 15)) ~= 0
-                }
+    local showIcon = true
+    
+    if(ArkInventory.db.profile.option.synastria ~= nil and ArkInventory.db.profile.option.synastria.forgedicon ~= nil) then
+        showIcon = ArkInventory.db.profile.option.synastria.forgedicon
+    end
+    
+    if(showIcon and item ~= nil and item.h ~= nil and GetItemLinkTitanforge) then
+        local forgedLevel = GetItemLinkTitanforge(item.h)
+    
+        if(forgedLevel > 0) then
+            hideForged = false
+            
+            if(_G[forgedFrameName] == nil) then
+                local forgedFrame = CreateFrame('Frame', forgedFrameName, frame)
+                forgedFrame:SetWidth(16)
+                forgedFrame:SetHeight(16)
+                forgedFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
+            
+                forgedFrame.text = forgedFrame:CreateFontString(nil, 'ARTWORK')
+                forgedFrame.text:SetFont([[Interface\AddOns\ArkInventory\Fonts\dfdrsp__.TTF]], 12, 'THICKOUTLINE')
+                forgedFrame.text:SetPoint('TOPRIGHT', 4, -2)
+                forgedFrame.text:SetJustifyH('RIGHT')
+                forgedFrame.text:SetShadowOffset(0, 0)
+                forgedFrame.text:SetShadowColor(0.1, 0.1, 0.1, 1)
             end
+            
+            local textureFile = nil
+            if(forgedLevel == 1) then
+                _G[forgedFrameName].text:SetTextColor(0.5, 0.5, 1)
+                _G[forgedFrameName].text:SetText('T')
+            elseif(forgedLevel == 2) then
+                _G[forgedFrameName].text:SetTextColor(1, 0.65, 0.5)
+                _G[forgedFrameName].text:SetText('W')
+            else
+                _G[forgedFrameName].text:SetTextColor(1, 1, 0.65)
+                _G[forgedFrameName].text:SetText('L')
+            end
+            
+            _G[forgedFrameName]:SetParent(frame)
+            _G[forgedFrameName]:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -2, -1)
+            _G[forgedFrameName]:SetFrameStrata(ArkInventory.db.profile.option.frameStrata or 'MEDIUM')
+            _G[forgedFrameName]:Show()
+        end
+    end
+    
+    if(_G[forgedFrameName] ~= nil) then
+        if(hideForged) then
+            _G[forgedFrameName]:Hide()
         end
     end
 end
@@ -8630,7 +8675,6 @@ end
 function scootsArkInv_iterateAllSlots(locId)
     if(_G['ARKINV_Frame' .. locId] ~= nil and _G['ARKINV_Frame' .. locId]:IsVisible()) then
         ArkInventory.ItemCacheClear()
-        scootsArkInv_refreshPerkOptions()
         
         for bagId = 1, 8 do
             local slotId = 1
@@ -8641,6 +8685,7 @@ function scootsArkInv_iterateAllSlots(locId)
                 
                 scootsArkInv_setFrameAttunement(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
                 scootsArkInv_setFrameBounty(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
+                scootsArkInv_setFrameForged(_G['ARKINV_Frame' .. locId .. 'ContainerBag' .. bagId .. 'Item' .. slotId], item)
                 
                 slotId = slotId + 1
             end
