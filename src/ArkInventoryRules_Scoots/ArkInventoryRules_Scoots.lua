@@ -167,21 +167,56 @@ function rule.optimalforme(...)
     
     local fn = 'optimalforme'
     
-    local _, playerClass = UnitClass('player')
-    playerClass = strupper(playerClass)
+    local playerClasses = {}
     local _, _, _, _, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(ArkInventoryRules.Object.h)
     
-    if(itemType == 'Weapon') then
-        local validForAll = {
-            ['Miscellaneous'] = true,
-            ['Fishing Poles'] = true
+    local validWeaponsForAll = {
+        ['Miscellaneous'] = true,
+        ['Fishing Poles'] = true
+    }
+    
+    local validArmourForAll = {
+        ['INVTYPE_NECK'] = true,
+        ['INVTYPE_FINGER'] = true,
+        ['INVTYPE_TRINKET'] = true,
+        ['INVTYPE_CLOAK'] = true,
+        ['INVTYPE_HOLDABLE'] = true,
+        ['INVTYPE_TABARD'] = true
+    }
+    
+    if((itemType == 'Weapon' and validWeaponsForAll[itemSubType]) or (itemType == 'Armor' and validArmourForAll[itemEquipLoc])) then
+        return true
+    end
+    
+    if(CustomGetClassMask == nil) then
+        local _, playerClass = UnitClass('player')
+        table.insert(playerClasses, strupper(playerClass))
+    else
+        local mask = CustomGetClassMask()
+        local classList = {
+            ['DEATHKNIGHT'] = 6,
+            ['DRUID'] = 11,
+            ['HUNTER'] = 3,
+            ['MAGE'] = 8,
+            ['PALADIN'] = 2,
+            ['PRIEST'] = 5,
+            ['ROGUE'] = 4,
+            ['SHAMAN'] = 7,
+            ['WARLOCK'] = 9,
+            ['WARRIOR'] = 1
         }
         
-        if(validForAll[itemSubType] ~= nil) then
-            return true
+        for className, classId in pairs(classList) do
+            if(bit.band(mask, bit.lshift(1, classId - 1)) > 0) then
+                table.insert(playerClasses, className)
+            end
         end
+    end
     
-        local map = {
+    local map = {}
+    
+    if(itemType == 'Weapon') then
+        map = {
             ['Daggers'] = {
                 ['DRUID'] = true,
                 ['HUNTER'] = true,
@@ -286,104 +321,73 @@ function rule.optimalforme(...)
                 ['WARLOCK'] = true
             }
         }
-        
-        local noOffhandWeapons = {
-            ['DRUID'] = true,
-            ['MAGE'] = true,
-            ['PRIEST'] = true,
-            ['WARLOCK'] = true
-        }
-
-        if(map[itemSubType][playerClass] ~= nil) then
-            if(itemEquipLoc == 'INVTYPE_WEAPONOFFHAND' and noOffhandWeapons[playerClass] ~= nil) then
-                return false
-            end
-            
-            return true
-        end
-        
-        return false
     elseif(itemType == 'Armor') then
-        local validForAll = {
-            ['INVTYPE_NECK'] = true,
-            ['INVTYPE_FINGER'] = true,
-            ['INVTYPE_TRINKET'] = true,
-            ['INVTYPE_CLOAK'] = true,
-            ['INVTYPE_HOLDABLE'] = true,
-            ['INVTYPE_TABARD'] = true,
-        }
-        
-        if(validForAll[itemEquipLoc] ~= nil) then
-            return true
-        end
-        
-        local map = {}
         if(itemSubType == 'Cloth') then
-            map = {
-                ['MAGE'] = true,
-                ['PRIEST'] = true,
-                ['WARLOCK'] = true
-            }
+            map.MAGE = true
+            map.PRIEST = true
+            map.WARLOCK = true
         elseif(itemSubType == 'Leather') then
-            map = {
-                ['DRUID'] = true,
-                ['ROGUE'] = true
-            }
+            map.DRUID = true
+            map.ROGUE = true
             
             if(itemMinLevel ~= nil and itemMinLevel < 40) then
                 map.HUNTER = true
                 map.SHAMAN = true
             end
         elseif(itemSubType == 'Mail') then
-            map = {
-                ['HUNTER'] = true,
-                ['SHAMAN'] = true
-            }
+            map.HUNTER = true
+            map.SHAMAN = true
             
             if(itemMinLevel ~= nil and itemMinLevel < 40) then
+                map.DEATHKNIGHT = true
                 map.PALADIN = true
                 map.WARRIOR = true
             end
         elseif(itemSubType == 'Plate') then
-            map = {
-                ['DEATHKNIGHT'] = true,
-                ['PALADIN'] = true,
-                ['WARRIOR'] = true
-            }
+            map.DEATHKNIGHT = true
+            map.PALADIN = true
+            map.WARRIOR = true
         elseif(itemSubType == 'Idols') then
-            map = {
-                ['DRUID'] = true
-            }
+            map.DRUID = true
         elseif(itemSubType == 'Librams') then
-            map = {
-                ['PALADIN'] = true
-            }
+            map.PALADIN = true
         elseif(itemSubType == 'Totems') then
-            map = {
-                ['SHAMAN'] = true
-            }
+            map.SHAMAN = true
         elseif(itemSubType == 'Sigils') then
-            map = {
-                ['DEATHKNIGHT'] = true
-            }
+            map.DEATHKNIGHT = true
         elseif(itemSubType == 'Shields') then
-            map = {
-                ['PALADIN'] = true,
-                ['SHAMAN'] = true,
-                ['WARRIOR'] = true
-            }
+            map.PALADIN = true
+            map.SHAMAN = true
+            map.WARRIOR = true
         else
             return true
         end
-        
-        if(map[playerClass] ~= nil) then
-            return true
-        end
-        
-        return false
     end
     
-    return true
+    local noOffhandWeapons = {
+        ['DRUID'] = true,
+        ['MAGE'] = true,
+        ['PRIEST'] = true,
+        ['WARLOCK'] = true
+    }
+    
+    for _, playerClass in pairs(playerClasses) do
+        if(itemType == 'Weapon') then
+            if(map[itemSubType][playerClass]) then
+                if(itemEquipLoc ~= 'INVTYPE_WEAPONOFFHAND' or noOffhandWeapons[playerClass] == nil) then
+                    return true
+                end
+            end
+        elseif(itemType == 'Armor') then
+            if(map[playerClass]) then
+                return true
+            end
+        else
+            return true
+        end
+    end
+    
+    return false
 end
 
 function rule.hasbounty(...)
