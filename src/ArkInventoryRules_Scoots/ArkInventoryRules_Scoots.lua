@@ -28,6 +28,7 @@ function rule:OnEnable()
     ArkInventoryRules.Register(self, 'ATTUNABLE', rule.attunable)
     ArkInventoryRules.Register(self, 'ATTUNABLEATALL', rule.attunableatall)
     ArkInventoryRules.Register(self, 'ATTUNED', rule.attuned)
+    ArkInventoryRules.Register(self, 'ATTUNEDANYAFFIX', rule.attunedanyaffix)
     ArkInventoryRules.Register(self, 'OPTIMALFORME', rule.optimalforme)
     ArkInventoryRules.Register(self, 'HASBOUNTY', rule.hasbounty)
 end
@@ -110,10 +111,6 @@ function rule.attunable(...)
         return false
     end
     
-    if(CanAttuneItemHelper == nil) then
-        return false
-    end
-    
     local fn = 'attunable'
     
     return rule.attunableatall() and rule.optimalforme()
@@ -143,7 +140,7 @@ function rule.attuned(...)
         return false
     end
     
-    if(CanAttuneItemHelper == nil or GetItemLinkAttuneProgress == nil) then
+    if(GetItemLinkAttuneProgress == nil) then
         return false
     end
     
@@ -158,6 +155,40 @@ function rule.attuned(...)
     end
     
     return true
+end
+
+function rule.attunedanyaffix(...)
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
+        return false
+    end
+    
+    local ac = select('#', ...)
+    local fn = 'attunedanyaffix'
+    
+    if(rule.attunableatall() == false) then
+        return false
+    end
+    
+    if(GetItemAttuneForge == nil or GetItemLinkTitanforge == nil) then
+        return false
+    end
+    
+    local forgeLevel = GetItemAttuneForge(getItemId())
+    if(ac == 0) then
+        return forgeLevel >= GetItemLinkTitanforge(ArkInventoryRules.Object.h)
+    end
+    
+    local arg = select(1, ...)
+    if(type(arg) ~= 'number') then
+        error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
+    end
+    
+    arg = math.floor(arg)
+    if(arg > 3) then
+        error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
+    end
+    
+    return GetItemAttuneForge(getItemId()) >= arg
 end
 
 function rule.optimalforme(...)

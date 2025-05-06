@@ -8,10 +8,11 @@ Download this repository, then extract the contents of the `src` directory into 
 
 ## Custom rules ##
 
-- `resist([resistName])` - Matches items that grant resistance. Can be called standalone `resist()` to match all resistances, or with specific resistances `resist('fire', 'frost')`.
+- `resist([(string) resistName])` - Matches items that grant resistance. Can be called standalone `resist()` to match all resistances, or with specific resistances `resist('fire', 'frost')`.
 - `mythic()` - Matches mythic items.
 - `attunable()` - Matches items that can be attuned by the current character.
 - `attunableatall()` - Matches items that can be attuned by anyone.
 - `attuned()` - Matches items that have been attuned.
-- `optimalforme()` - Matches items that are optimal for the current character.
+- `attunedanyaffix([(integer) forgelevel])` - Matches items where you have attuned any affix for. Pass a number 0 - 3 to specify the minimum forgelevel it must have been attuned at (0 = unforged, 1 = titanforged, 2 = warforged, 3 = lightforged). Leave blank to use the forge level of the item  in your inventory.
+- `optimalforme()` - Matches items that are optimal for the current character - e.g. leather for rogus and druids, plate and low level mail for warriors, paladins, and deathknights etc.
 - `hasbounty()` - Matches items which have an active bounty.
