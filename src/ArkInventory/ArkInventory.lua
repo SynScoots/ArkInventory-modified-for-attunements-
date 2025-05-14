@@ -40,7 +40,7 @@ ArkInventory.Const = { -- constants
 		Name = "ArkInventory",
 		Version = 3.0254,
 		UIVersion = "3.2.54",
-		Beta = "17-00-Cataclysm",
+		Beta = "17-00-Cataclysm-Scoots",
 	},
 	
 	Frame = {
@@ -8457,45 +8457,32 @@ end
 function scootsArkInv_deriveRGB(progress)
 	local colours = {
 		['0']   = {['r'] = 1.0, ['g'] = 0.1, ['b'] = 0.1},
-		['50']  = {['r'] = 1.0, ['g'] = 1.0, ['b'] = 0.0},
-		['100'] = {['r'] = 0.1, ['g'] = 1.0, ['b'] = 0.1}
+		['100'] = {['r'] = 1.0, ['g'] = 1.0, ['b'] = 0.0}
 	}
+    
+    if(progress >= 100) then
+        return 0.1, 1.0, 0.1
+    end
 	
 	if(progress == 0) then
-		return colours['0']['r'], colours['0']['g'], colours['0']['b']
-	elseif(progress == 50) then
-		return colours['50']['r'], colours['50']['g'], colours['50']['b']
+		return colours['0'].r, colours['0'].g, colours['0'].b
 	elseif(progress == 100) then
-		return colours['100']['r'], colours['100']['g'], colours['100']['b']
+		return colours['100'].r, colours['100'].g, colours['100'].b
 	end
-	
-	local lowerRGB = {}
-	local upperRGB = {}
-	
-	if(progress < 50) then
-		progress = progress * 2
-		lowerRGB = colours['0']
-		upperRGB = colours['50']
-	else
-		progress = (progress - 50) * 2
-		lowerRGB = colours['50']
-		upperRGB = colours['100']
-	end
-	
-	local out = {}
-	progress = progress / 100
-	
+    
+    local out = {}
+    progress = progress / 100
+    
 	for _, key in ipairs({'r', 'g', 'b'}) do
-		if(lowerRGB[key] == upperRGB[key]) then
-			out[key] = lowerRGB[key]
-		elseif(lowerRGB[key] < upperRGB[key]) then
-			out[key] = lowerRGB[key] + ((upperRGB[key] - lowerRGB[key]) * progress)
-		else
-			out[key] = lowerRGB[key] - ((lowerRGB[key] - upperRGB[key]) * progress)
-		end
-	end
-	
-	return out.r, out.g, out.b
+        if(colours['0'][key] == colours['100'][key]) then
+            out[key] = colours['0'][key]
+        else
+            local minV, maxV = math.min(colours['0'][key], colours['100'][key]), math.max(colours['0'][key], colours['100'][key])
+            out[key] = minV + ((maxV - minV) * progress)
+        end
+    end
+    
+    return out.r, out.g, out.b
 end
 
 function scootsArkInv_getItemId(itemLink)
@@ -8692,3 +8679,45 @@ function scootsArkInv_iterateAllSlots(locId)
         end
     end
 end
+
+function scootsArkInv_watchChatForAttunement(message)
+    if(string.find(message, 'You have attuned with', 1, true)) then
+        local itemId = tonumber(string.match(string.match(message, 'Hitem:%d+'), '%d+'))
+        
+        for bagId = 0, 4 do
+            local containerLength = GetContainerNumSlots(bagId)
+            for slotId = 1, containerLength, 1 do
+                local bagItemId = GetContainerItemID(bagId, slotId)
+                
+                if(bagItemId == itemId) then
+                    ArkInventory.ObjectLockChanged(ArkInventory.Const.Location.Bag, bagId, slotId)
+                end
+            end
+        end
+        
+        ArkInventory.LocationSetValue(nil, 'changed', true)
+        ArkInventory.LocationSetValue(nil, 'resort', true)
+        ArkInventory.LocationSetValue(ArkInventory.Const.Location.Bag, 'resort', true)
+        ArkInventory.Frame_Main_Generate(ArkInventory.Const.Location.Bag, ArkInventory.Const.Window.Draw.Resort)
+        ArkInventory.LocationSetValue(ArkInventory.Const.Location.Wearing, 'resort', true)
+        ArkInventory.Frame_Main_Generate(ArkInventory.Const.Location.Wearing, ArkInventory.Const.Window.Draw.Resort)
+        
+        for locationId in pairs(ArkInventory.Global.Location) do
+            ArkInventory.Frame_Main_Generate(locationId, ArkInventory.Const.Window.Draw.Recalculate)
+        end
+
+        ArkInventory.ScanLocation()
+    end
+end
+
+function scootsArkInv_eventHandler(self, event, arg1)
+    if(event == 'CHAT_MSG_SYSTEM') then
+        scootsArkInv_watchChatForAttunement(arg1)
+    end
+end
+
+local scootsArkInv_eventsFrame = CreateFrame('Frame', 'scootsArkInv-eventsFrame', UIParent)
+
+scootsArkInv_eventsFrame:SetScript('OnEvent', scootsArkInv_eventHandler)
+
+scootsArkInv_eventsFrame:RegisterEvent('CHAT_MSG_SYSTEM')
