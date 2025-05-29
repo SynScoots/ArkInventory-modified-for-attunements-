@@ -1,6 +1,6 @@
 ## Description ##
 
-This is a modified ArkInventory that adds support for attunements.
+This is a modified ArkInventory that adds support for attunements. Additionally, there are some extra display options available via `/ai config`.
 
 ## Installation ##
 
