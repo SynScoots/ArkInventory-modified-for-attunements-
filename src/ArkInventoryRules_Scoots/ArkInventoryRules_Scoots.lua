@@ -31,6 +31,7 @@ function rule:OnEnable()
     ArkInventoryRules.Register(self, 'ATTUNEDANYAFFIX', rule.attunedanyaffix)
     ArkInventoryRules.Register(self, 'OPTIMALFORME', rule.optimalforme)
     ArkInventoryRules.Register(self, 'HASBOUNTY', rule.hasbounty)
+    ArkInventoryRules.Register(self, 'HASAFFIX', rule.hasaffix)
 end
 
 function rule.resist(...)
@@ -188,7 +189,7 @@ function rule.attunedanyaffix(...)
         error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
     end
     
-    return GetItemAttuneForge(getItemId()) >= arg
+    return forgeLevel >= arg
 end
 
 function rule.optimalforme(...)
@@ -426,11 +427,30 @@ function rule.hasbounty(...)
         return false
     end
     
-    if(IsAttunableBySomeone == nil) then
+    local fn = 'hasbounty'
+    
+    return GetCustomGameData(31, getItemId()) > 0
+end
+
+function rule.hasaffix(...)
+    if not ArkInventoryRules.Object.h or ArkInventoryRules.Object.class ~= 'item' then
         return false
     end
     
-    local fn = 'attunableatall'
+    local fn = 'hasaffix'
     
-    return GetCustomGameData(31, getItemId()) > 0
+    local check = {}
+    for substring in string.gmatch(ArkInventoryRules.Object.h, '([^:]*)') do
+        if(substring and substring ~= '') then
+            table.insert(check, substring)
+        end
+    end
+    
+    if(not check[8]) then
+        return false
+    end
+    
+    check = string.match(check[8], '-?%d+')
+    
+    return check and check ~= '0'
 end

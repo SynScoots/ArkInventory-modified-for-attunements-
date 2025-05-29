@@ -8633,7 +8633,6 @@ function scootsArkInv_setFrameForged(frame, item)
                 forgedFrame.text:SetShadowColor(0.1, 0.1, 0.1, 1)
             end
             
-            local textureFile = nil
             if(forgedLevel == 1) then
                 _G[forgedFrameName].text:SetTextColor(0.5, 0.5, 1)
                 _G[forgedFrameName].text:SetText('T')
