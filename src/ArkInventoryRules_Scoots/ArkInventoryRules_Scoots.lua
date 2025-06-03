@@ -240,12 +240,39 @@ function rule.optimalforme(...)
         
         for className, classId in pairs(classList) do
             if(bit.band(mask, bit.lshift(1, classId - 1)) > 0) then
-                table.insert(playerClasses, className)
+                playerClasses[className] = true
             end
         end
     end
     
     local map = {}
+    
+    TTH:ClearLines()
+    TTH:SetOwner(UIParent)
+    TTH:SetHyperlink(ArkInventoryRules.Object.h)
+    local lines = getTooltipLines(TTH)
+    TTH:Hide()
+    
+    for _, line in pairs(lines) do
+        local check = string.match(line, '^Classes: (.*)$')
+        if(check) then
+            local itemClasses = string.gmatch(check, '([^, ]*)')
+            local classMatch = false
+            
+            for itemClass in itemClasses do
+                if(playerClasses[string.upper(itemClass)]) then
+                    classMatch = true
+                    break
+                end
+            end
+            
+            if(classMatch == false) then
+                return false
+            end
+            
+            break
+        end
+    end
     
     if(itemType == 'Weapon') then
         map = {
@@ -403,7 +430,7 @@ function rule.optimalforme(...)
         ['WARLOCK'] = true
     }
     
-    for _, playerClass in pairs(playerClasses) do
+    for playerClass, _ in pairs(playerClasses) do
         if(itemType == 'Weapon') then
             if(map[itemSubType][playerClass]) then
                 if(itemEquipLoc ~= 'INVTYPE_WEAPONOFFHAND' or noOffhandWeapons[playerClass] == nil) then
@@ -429,7 +456,21 @@ function rule.hasbounty(...)
     
     local fn = 'hasbounty'
     
-    return GetCustomGameData(31, getItemId()) > 0
+    local arg = select(1, ...)
+    if(arg == nil) then
+        return GetCustomGameData(31, getItemId()) > 0
+    else
+        if(type(arg) ~= 'number') then
+            error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
+        end
+        
+        arg = math.floor(arg)
+        if(arg < 0) then
+            error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
+        end
+        
+        return GetCustomGameData(31, getItemId()) >= arg
+    end
 end
 
 function rule.hasaffix(...)
