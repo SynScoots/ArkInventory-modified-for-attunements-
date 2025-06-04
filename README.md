@@ -7,6 +7,7 @@ This is a modified ArkInventory that adds support for attunements. Additionally,
 Download this repository, then extract the contents of the `src` directory into your `World of Warcraft/Interface/AddOns` directory.
 
 ## Custom rules ##
+For help with rules, see [the rules wiki](https://github.com/arkayenro/arkinventory/wiki/Rules) - please note some of the rule functions shown on this wiki will be from newer versions of the game only.
 
 - `resist([(string) resistName])` - Matches items that grant resistance. Can be called standalone `resist()` to match all resistances, or with specific resistances `resist('fire', 'frost')`.
 - `mythic()` - Matches mythic items.
