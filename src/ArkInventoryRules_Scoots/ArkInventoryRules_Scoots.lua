@@ -341,6 +341,7 @@ function rule.optimalforme(...)
             },
             ['Polearms'] = {
                 ['DEATHKNIGHT'] = true,
+                ['DRUID'] = true,
                 ['HUNTER'] = true,
                 ['PALADIN'] = true,
                 ['WARRIOR'] = true
@@ -398,6 +399,9 @@ function rule.optimalforme(...)
             map.SHAMAN = true
             
             if(itemMinLevel ~= nil and itemMinLevel < 40) then
+                map.HUNTER = false
+                map.SHAMAN = false
+                
                 map.DEATHKNIGHT = true
                 map.PALADIN = true
                 map.WARRIOR = true
