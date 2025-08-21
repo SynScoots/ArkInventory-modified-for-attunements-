@@ -3,6 +3,7 @@
 -- $Date: 2010-10-12 16:53:38 +1100 (Tue, 12 Oct 2010) $
 
 local _cu_uib_old_ArkInvScoots = nil
+local attunedEvent = false
 local perkOptions = nil
 
 ArkInventory = LibStub( "AceAddon-3.0" ):NewAddon( "ArkInventory", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceBucket-3.0" )
@@ -8681,16 +8682,24 @@ end
 
 function scootsArkInv_watchChatForAttunement(message)
     if(string.find(message, 'You have attuned with', 1, true)) then
-        local itemId = tonumber(string.match(string.match(message, 'Hitem:%d+'), '%d+'))
+        attunedEvent = true
+    end
+end
+
+function scootsArkInv_eventHandler(self, event, arg1)
+    if(event == 'CHAT_MSG_SYSTEM') then
+        scootsArkInv_watchChatForAttunement(arg1)
+    end
+end
+
+function scootsArkInv_updateLoop()
+    if(attunedEvent == true) then
+        attunedEvent = false
         
         for bagId = 0, 4 do
             local containerLength = GetContainerNumSlots(bagId)
             for slotId = 1, containerLength, 1 do
-                local bagItemId = GetContainerItemID(bagId, slotId)
-                
-                if(bagItemId == itemId) then
-                    ArkInventory.ObjectLockChanged(ArkInventory.Const.Location.Bag, bagId, slotId)
-                end
+                ArkInventory.ObjectLockChanged(ArkInventory.Const.Location.Bag, bagId, slotId)
             end
         end
         
@@ -8709,14 +8718,9 @@ function scootsArkInv_watchChatForAttunement(message)
     end
 end
 
-function scootsArkInv_eventHandler(self, event, arg1)
-    if(event == 'CHAT_MSG_SYSTEM') then
-        scootsArkInv_watchChatForAttunement(arg1)
-    end
-end
-
 local scootsArkInv_eventsFrame = CreateFrame('Frame', 'scootsArkInv-eventsFrame', UIParent)
 
 scootsArkInv_eventsFrame:SetScript('OnEvent', scootsArkInv_eventHandler)
+scootsArkInv_eventsFrame:SetScript('OnUpdate', scootsArkInv_updateLoop)
 
 scootsArkInv_eventsFrame:RegisterEvent('CHAT_MSG_SYSTEM')
