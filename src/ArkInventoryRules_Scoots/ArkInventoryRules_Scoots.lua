@@ -5,10 +5,6 @@ function ArkInventoryRules_Scoots_RegisterTTH(tooltip)
     TTH = tooltip
 end
 
-local function getItemId()
-    return tonumber(string.match(string.match(ArkInventoryRules.Object.h, 'item:%d+'), '%d+'))
-end
-
 local function getTooltipLines(tooltip)
     local lines = {}
     local tooltipLines = {tooltip:GetRegions()}
@@ -114,7 +110,7 @@ function rule.attunable(...)
     
     local fn = 'attunable'
     
-    return rule.attunableatall() and rule.optimalforme()
+    return CanAttuneItemHelper(CustomExtractItemId(ArkInventoryRules.Object.h)) > 0
 end
 
 function rule.attunableatall(...)
@@ -128,7 +124,7 @@ function rule.attunableatall(...)
     
     local fn = 'attunableatall'
     
-    local check = IsAttunableBySomeone(getItemId())
+    local check = IsAttunableBySomeone(CustomExtractItemId(ArkInventoryRules.Object.h))
     if(check ~= nil and check ~= 0) then
         return true
     end
@@ -174,7 +170,7 @@ function rule.attunedanyaffix(...)
         return false
     end
     
-    local forgeLevel = GetItemAttuneForge(getItemId())
+    local forgeLevel = GetItemAttuneForge(CustomExtractItemId(ArkInventoryRules.Object.h))
     if(ac == 0) then
         return forgeLevel >= GetItemLinkTitanforge(ArkInventoryRules.Object.h)
     end
@@ -462,7 +458,7 @@ function rule.hasbounty(...)
     
     local arg = select(1, ...)
     if(arg == nil) then
-        return GetCustomGameData(31, getItemId()) > 0
+        return GetCustomGameData(31, CustomExtractItemId(ArkInventoryRules.Object.h)) > 0
     else
         if(type(arg) ~= 'number') then
             error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
@@ -473,7 +469,7 @@ function rule.hasbounty(...)
             error(string.format(ArkInventory.Localise['RULE_FAILED_ARGUMENT_IS_INVALID'], fn, ax, string.format('%s', ArkInventory.Localise['STRING']), 0))
         end
         
-        return GetCustomGameData(31, getItemId()) >= arg
+        return GetCustomGameData(31, CustomExtractItemId(ArkInventoryRules.Object.h)) >= arg
     end
 end
 
