@@ -2511,11 +2511,13 @@ end
 
 function ArkInventory.ObjectIDTooltip( h )
 	
-	local class, v1, v2 = ArkInventory.ObjectStringDecode( h )
+	local class, v1, _, _, _, _, _, v7, v8 = ArkInventory.ObjectStringDecode( h )
 	
 	--ArkInventory.Output( "class[", class, "] : [", v1, "] : [", v2, "]" )
 	
-	if class == "item" or class == "empty" or class == "spell" then
+	if class == "item" then
+		return string.format( "%s:%s:%s:%s", class, v1, v7, v8 )
+	elseif class == "empty" or class == "spell" then
 		return string.format( "%s:%s", class, v1 )
 	elseif class == "token" then
 		return string.format( "%s:%s", class, v1 )
