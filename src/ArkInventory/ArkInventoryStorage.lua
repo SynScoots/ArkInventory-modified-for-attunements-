@@ -2517,9 +2517,7 @@ function ArkInventory.ObjectIDTooltip( h )
 	
 	if class == "item" then
 		return string.format( "%s:%s:%s:%s", class, v1, v7, v8 )
-	elseif class == "empty" or class == "spell" then
-		return string.format( "%s:%s", class, v1 )
-	elseif class == "token" then
+	elseif class == "empty" or class == "spell" or class == "token" then
 		return string.format( "%s:%s", class, v1 )
 	else
 		assert( "uncoded class [" .. class .. "]" )
