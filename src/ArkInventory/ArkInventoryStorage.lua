@@ -2510,17 +2510,26 @@ function ArkInventory.ObjectIDInternal( h )
 end
 
 function ArkInventory.ObjectIDTooltip( h )
-	
+
 	local class, v1, _, _, _, _, _, v7, v8 = ArkInventory.ObjectStringDecode( h )
-	
-	--ArkInventory.Output( "class[", class, "] : [", v1, "] : [", v2, "]" )
-	
+
+	-- ArkInventory.Output( "class[", class, "] : [", v1, "] : [", v2, "]" )
+
 	if class == "item" then
-		return string.format( "%s:%s:%s:%s", class, v1, v7, v8 )
+		if select(9, GetItemInfo(h)) == ( "INVTYPE_WEAPON" or "INVTYPE_WEAPONMAINHAND" or "INVTYPE_WEAPONOFFHAND" or "INVTYPE_2HWEAPON" ) then
+			return string.format( "%s:%s:0:%s", class, v1, v8 )
+
+		else
+			return string.format( "%s:%s:%s:%s", class, v1, v7, v8 )
+			
+		end
+		
 	elseif class == "empty" or class == "spell" or class == "token" then
 		return string.format( "%s:%s", class, v1 )
+		
 	else
 		assert( "uncoded class [" .. class .. "]" )
+		
 	end
 
 end
