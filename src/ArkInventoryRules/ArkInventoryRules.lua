@@ -1241,7 +1241,7 @@ function ArkInventoryRules.Register( a, n , f, o ) -- addon, rule name, function
 	end
 	
 	ArkInventoryRules.Environment[n] = f
-	ArkInventory.Output( "Successful rule registration from ", a:GetName( ), " - rule function [", n, "] is now active" )
+	--ArkInventory.Output( "Successful rule registration from ", a:GetName( ), " - rule function [", n, "] is now active" )
 	return true
 	
 end

@@ -431,8 +431,13 @@ function ArkInventory.TooltipObjectCountGet( search_id )
 		end
 		
 	end
+    
+    local resource_bank_count = 0
+    if(CustomExtractItemId and GetCustomGameData) then
+        resource_bank_count = GetCustomGameData(13, CustomExtractItemId(search_id))
+    end
 
-	if item_count_total > 0 or guild_count > 0 then
+	if item_count_total > 0 or guild_count > 0 or resource_bank_count > 0 then
 		
 		local c = ""
 		
@@ -455,8 +460,13 @@ function ArkInventory.TooltipObjectCountGet( search_id )
 			g = string.format( "%s%s", g, table.concat( guild_entries, "\n" ) )
 			
 		end
+        
+        local resourceBankString = ''
+        if(resource_bank_count > 0) then
+            resourceBankString = '\n' .. string.format('%s: %s%s|r', 'Resource bank', colour, resource_bank_count)
+        end
 		
-		return string.format( "%s%s", c, g )
+		return string.format( "%s%s%s", c, g, resourceBankString )
 		
 	else
 		
