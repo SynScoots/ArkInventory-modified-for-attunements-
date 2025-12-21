@@ -8591,7 +8591,7 @@ function scootsArkInv_setFrameBounty(frame, item)
             end
             
             _G[bountyFrameName]:SetParent(frame)
-            _G[bountyFrameName]:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -2, 2)
+            _G[bountyFrameName]:SetPoint('TOP', frame, 'TOP', 0, -2)
             _G[bountyFrameName]:SetFrameStrata(ArkInventory.db.profile.option.frameStrata or 'MEDIUM')
             _G[bountyFrameName]:Show()
         end
