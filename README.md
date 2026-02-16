@@ -19,3 +19,4 @@ For help with rules, see [the rules wiki](https://github.com/arkayenro/arkinvent
 - `optimalforme()` - Matches items that are optimal for the current character - e.g. leather for rogues and druids, plate and low level mail for warriors, paladins, and deathknights etc.
 - `hasbounty([(integer) gold])` - Matches items which have an active bounty. Optionally specify a minimum gold value for the bounty.
 - `hasaffix()` - Matches items which have an affix (e.g. "Of the Eagle", "Of the Bandit", etc.)
+- `hasattuneableupgrade([(boolean) includeAttunedUpgrades}])` - Matches items that can be upgraded into other attuneable items. Optionally pass true as a parameter to match already attuned upgrades.
