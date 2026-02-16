@@ -8692,7 +8692,15 @@ function scootsArkInv_eventHandler(self, event, arg1)
     end
 end
 
+local forceAttuneEventAfterCombat = false
 function scootsArkInv_updateLoop()
+    if(UnitAffectingCombat('player')) then
+        forceAttuneEventAfterCombat = true
+    elseif(forceAttuneEventAfterCombat) then
+        forceAttuneEventAfterCombat = false
+        attunedEvent = true
+    end
+
     if(attunedEvent == true) then
         attunedEvent = false
         
