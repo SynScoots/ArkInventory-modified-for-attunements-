@@ -87,21 +87,11 @@ function rule.mythic(...)
         return false
     end
     
-    local fn = 'mythic'
-    
-    TTH:ClearLines()
-    TTH:SetOwner(UIParent)
-    TTH:SetHyperlink(ArkInventoryRules.Object.h)
-    local lines = getTooltipLines(TTH)
-    TTH:Hide()
-    
-    for _, line in ipairs(lines) do
-        if(line == 'Mythic') then
-            return true
-        end
+    if(CustomExtractItemId == nil or GetItemTagsCustom == nil) then
+        return false
     end
     
-    return false
+    return bit.band((select(1, GetItemTagsCustom(CustomExtractItemId(ArkInventoryRules.Object.h)))), 0x80) > 0
 end
 
 function rule.attunable(...)
@@ -519,6 +509,7 @@ function rule.hasattuneableupgrade(...)
         [5966] = {7938},
         [7387] = {10721},
         [9149] = {13503},
+        [9362] = {9538, 9588},
         [10026] = {7189, 10724},
         [10500] = {10545, 16008},
         [10502] = {15999},
@@ -600,6 +591,7 @@ function rule.hasattuneableupgrade(...)
         [17193] = {17182},
         [17204] = {17182},
         [18608] = {18609},
+        [18706] = {19024},
         [21196] = {21197},
         [21197] = {21198},
         [21198] = {21199},

@@ -20,3 +20,11 @@ For help with rules, see [the rules wiki](https://github.com/arkayenro/arkinvent
 - `hasbounty([(integer) gold])` - Matches items which have an active bounty. Optionally specify a minimum gold value for the bounty.
 - `hasaffix()` - Matches items which have an affix (e.g. "Of the Eagle", "Of the Bandit", etc.)
 - `hasattuneableupgrade([(boolean) includeAttunedUpgrades}])` - Matches items that can be upgraded into other attuneable items. Optionally pass true as a parameter to match already attuned upgrades.
+
+## Support ##
+
+If you'd like to show support for my addons you can use the button below.
+
+Please do not feel obligated to do so - especially if you are not in a financially secure position - and please don't give beyond your means.
+
+<a href="https://www.buymeacoffee.com/Scoots"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" style="height:30px;" /></a>
